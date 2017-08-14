@@ -11,34 +11,34 @@ const restMethods = {
 
 module.exports = class ApiBase {
   constructor(options) {
-    this._internals = {
-      circuitBreaker: {
-        gracePeriodMs: 5000,
-        threshold: 5,
-      },
-      clientApi: {
-        baseURL: '',
-        headers: new Headers({
-          'Content-Type': 'text/plain'
-        })
-      }
+    this._circuitBreaker = {
+      gracePeriodMs: 5000,
+      threshold: 5,
     };
 
-    if (options.circuitBreaker) {
-      Hoek.merge(this._internals.circuitBreaker, options.circuitBreaker);
-      delete options.circuitBreaker;
-      this._breaker = circuitBreaker(fetch, this._internals.circuitBreaker);
+    this._clientApi = {
+      baseURL: '',
+      headers: new Headers({
+        'Content-Type': 'text/plain'
+      })
+    };
+
+    const { circuitBreaker: circuitBreakerConf, ...fetchConf } = options;
+
+    if (circuitBreakerConf) {
+      Hoek.merge(this._circuitBreaker, circuitBreakerConf);
+      this._breaker = circuitBreaker(fetch, this._circuitBreaker);
       return;
     }
 
-    Hoek.merge(this._internals.clientApi, options);
-    this._breaker = nullCircuitBreaker(fetch, this._internals.circuitBreaker);
+    Hoek.merge(this._clientApi, fetchConf);
+    this._breaker = nullCircuitBreaker(fetch, {});
   }
 
   _createPayload(method, data) {
     return restMethods.payload.includes(method.toLowerCase()) && data === Object(data)
-    ? data
-    : {};
+      ? data
+      : {};
   }
     
   _buildQueryString(object) {
@@ -71,9 +71,9 @@ module.exports = class ApiBase {
   }
 
   fetch(resource, method, data = {}){
-    const url = `${this._internals.clientApi.baseURL}/${this._buildUrl(resource, method, data)}`;
+    const url = `${this._clientApi.baseURL}/${this._buildUrl(resource, method, data)}`;
     const req = {
-      ...this._internals.clientApi,
+      ...this._clientApi,
       method,
       body: JSON.stringify(this._createPayload(method, data))
     };
