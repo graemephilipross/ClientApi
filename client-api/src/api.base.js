@@ -9,13 +9,12 @@ const restMethods = {
   payload: ['post', 'put', 'patch']
 };
 
-module.exports = class ApiBase {
-  constructor(options) {
+export default class ApiBase {
+  constructor(options = {}) {
     this._circuitBreaker = {
       gracePeriodMs: 5000,
       threshold: 5,
     };
-
     this._clientApi = {
       baseURL: '',
       headers: new Headers({
@@ -79,4 +78,4 @@ module.exports = class ApiBase {
     };
     return this._sendReq(url, req);
   }
-};
+}
