@@ -7,8 +7,8 @@
     "build": "webpack --config prod.webpack.config.js -p",
     "postbuild": "cp index.html ./dist/index.html",
     "start": "webpack-dev-server",
-    "test": "SET NODE_ENV=testing && karma start --single-run || true",
-    "test:watch": "SET NODE_ENV=testing && karma start || true"
+    "test": "karma start --single-run || true",
+    "test:watch": "karma start || true"
   },
   "repository": {
     "type": "git",
@@ -25,6 +25,7 @@
     "babel-core": "^6.23.1",
     "babel-loader": "^6.3.2",
     "babel-plugin-transform-object-rest-spread": "^6.23.0",
+    "babel-preset-es2015": "^6.24.1",
     "babel-preset-es2017": "^6.24.1",
     "chai": "^4.1.1",
     "eslint": "^3.16.1",

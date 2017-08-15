@@ -16,21 +16,21 @@ export default class ApiBase {
       threshold: 5,
     };
     this._clientApi = {
-      baseURL: '',
       headers: new Headers({
         'Content-Type': 'text/plain'
-      })
+      }),
+      baseURL: ''
     };
 
     const { circuitBreaker: circuitBreakerConf, ...fetchConf } = options;
 
     if (circuitBreakerConf) {
-      Hoek.merge(this._circuitBreaker, circuitBreakerConf);
+      this._circuitBreaker = Object.assign({}, this._circuitBreaker, circuitBreakerConf);
       this._breaker = circuitBreaker(fetch, this._circuitBreaker);
       return;
     }
 
-    Hoek.merge(this._clientApi, fetchConf);
+    this._clientApi = Object.assign({}, this._clientApi, fetchConf);
     this._breaker = nullCircuitBreaker(fetch, {});
   }
 
@@ -55,7 +55,10 @@ export default class ApiBase {
     return resource;
   }
 
+  // set addiotnal options method
+
   _sendReq(url, req) {
+    // may have to amend as all status codes return true
     return this._breaker(url, req)
     .catch(error => {
       // err callback in req
