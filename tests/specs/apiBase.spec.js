@@ -77,9 +77,179 @@ describe("Client API base service", function() {
     });
 
     it("should not create a payload obj", function() {
-      const payload = api._createPayload('get', { test: 'testVal'});
-      expect(payload).to.not.have.any.keys('test');
+      const payloadGet = api._createPayload('get', { test: 'testVal'});
+      expect(payloadGet).to.not.have.any.keys('test');
+      const payloadDel = api._createPayload('delete', { test: 'testVal'});
+      expect(payloadDel).to.not.have.any.keys('test');
     });
 
+    it("should create a payload obj", function() {
+      const payloadPost = api._createPayload('post', { test: 'testVal'});
+      expect(payloadPost).to.have.property('test');
+      const payloadPut = api._createPayload('put', { test: 'testVal'});
+      expect(payloadPut).to.have.property('test');
+      const payloadPatch = api._createPayload('put', { test: 'testVal'});
+      expect(payloadPatch).to.have.property('test');
+    });
+  });
+
+  describe("test building up a query string", function() {
+    
+    let api = null;
+
+    before('set up a mock client', function() {
+      api = new mockClientApi({
+        headers: new Headers({
+          'Content-Type': 'application/json'
+        }),
+        baseURL: 'www.mockClientApi.com',
+      });
+    });
+
+    it("should build up a query string", function() {
+      const queryOne = api._buildQueryString({test: 'testVal'});
+      expect(queryOne).to.equal('test=testVal');
+      const queryTwo = api._buildQueryString({test: 'testVal', test1: 'testVal1'});
+      expect(queryTwo).to.equal('test=testVal&test1=testVal1');
+    });
+  });
+
+  describe("test building a url", function() {
+    
+    let api = null;
+
+    before('set up a mock client', function() {
+      api = new mockClientApi({
+        headers: new Headers({
+          'Content-Type': 'application/json'
+        }),
+        baseURL: 'www.mockClientApi.com',
+      });
+    });
+
+    it("should build up a url without query string", function() {
+      const urlOne = api._buildUrl('api/test', 'post', {});
+      expect(urlOne).to.equal('api/test');
+      const urlTwo = api._buildUrl('api/test', 'get', {});
+      expect(urlTwo).to.equal('api/test');
+      const urlThree = api._buildUrl('api/test', 'post', {test: 'testVal'});
+      expect(urlThree).to.equal('api/test');
+    });
+
+    it("should build up a url with a query string", function() {
+      const urlOne = api._buildUrl('api/test', 'post', {test: 'testVal'});
+      expect(urlOne).to.equal('api/test');
+      const urlTwo = api._buildUrl('api/test', 'get', {test: 'testVal'});
+      expect(urlTwo).to.equal('api/test?test=testVal');
+    });
+  });
+
+  describe("test sending a request", function() {
+    
+    let api = null;
+
+    it("should send a request and return resolved promise", function() {
+      let mockClientApiResolve = ClientApi({
+        './circuit-breaker': sinon.stub().returns(() => Promise.resolve()),
+        './null-circuit-breaker': sinon.stub().returns(() => Promise.resolve())
+      }).default;
+
+      api = new mockClientApiResolve({
+        headers: new Headers({
+          'Content-Type': 'application/json'
+        }),
+        baseURL: 'www.mockClientApi.com',
+      });
+      return api._sendReq('api/test', {})
+      .catch(() => {
+        assert(false);
+      });
+    });
+
+    it("should send a request and return rejected promise", function() {
+      let mockClientApiResolve = ClientApi({
+        './circuit-breaker': sinon.stub().returns(() => Promise.reject({response: ''})),
+        './null-circuit-breaker': sinon.stub().returns(() => Promise.reject({response: ''}))
+      }).default;
+
+      api = new mockClientApiResolve({
+        headers: new Headers({
+          'Content-Type': 'application/json'
+        }),
+        baseURL: 'www.mockClientApi.com',
+      });
+      return api._sendReq('api/test', {})
+      .catch(() => {
+        assert(true);
+      });
+    });
+
+    it("should send a request and return rejected promise and execute callback", function() {
+      let mockClientApiResolve = ClientApi({
+        './circuit-breaker': sinon.stub().returns(() => Promise.reject({
+          response: {
+            status: 404
+          }
+        })),
+        './null-circuit-breaker': sinon.stub().returns(() => Promise.reject({
+          response: {
+            status: 404
+          }
+        }))
+      }).default;
+      const callback = sinon.spy();
+      api = new mockClientApiResolve({
+        headers: new Headers({
+          'Content-Type': 'application/json',
+        }),
+        baseURL: 'www.mockClientApi.com',
+        '404': callback
+      });
+      return api._sendReq('api/test', {})
+      .catch(() => {
+        assert(callback.called);
+      });
+    });
+  });
+
+  describe("test calling public fetch", function() {
+    
+    let api = null;
+
+    it("should send a fetch request and be resolved", function() {
+      let mockClientApiResolve = ClientApi({
+        './circuit-breaker': sinon.stub().returns(() => Promise.resolve()),
+        './null-circuit-breaker': sinon.stub().returns(() => Promise.resolve())
+      }).default;
+
+      api = new mockClientApiResolve({
+        headers: new Headers({
+          'Content-Type': 'application/json'
+        }),
+        baseURL: 'www.mockClientApi.com',
+      });
+      return api.fetch('api/test', 'post', {})
+      .then(() => {
+        assert(true);
+      });
+    });
+
+    it("should send a fetch request and be rejected", function() {
+      let mockClientApiResolve = ClientApi({
+        './circuit-breaker': sinon.stub().returns(() => Promise.reject()),
+        './null-circuit-breaker': sinon.stub().returns(() => Promise.reject())
+      }).default;
+
+      api = new mockClientApiResolve({
+        headers: new Headers({
+          'Content-Type': 'application/json'
+        }),
+        baseURL: 'www.mockClientApi.com',
+      });
+      return api.fetch('api/test', 'post', {})
+      .catch(() => {
+        assert(true);
+      });
+    });
   });
 });

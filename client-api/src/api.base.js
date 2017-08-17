@@ -49,7 +49,7 @@ export default class ApiBase {
   }
 
   _buildUrl(resource, method, data) {
-    if (restMethods.payload.includes(method.toLowerCase()) && Hoek.deepEqual(data, Object)) {
+    if (restMethods.query.includes(method.toLowerCase()) && !Hoek.deepEqual(data, {})) {
       resource += `?${this._buildQueryString(data)}`;
     }
     return resource;
@@ -61,12 +61,12 @@ export default class ApiBase {
     // may have to amend as all status codes return true
     return this._breaker(url, req)
     .catch(error => {
-      // err callback in req
+      // err callback in config
       if (
-        error.response.status in req &&
-        error.response.status instanceof Function
+        error.response.status in this._clientApi &&
+        this._clientApi[error.response.status] instanceof Function
       ) {
-        req[error.response.status]();
+        this._clientApi[error.response.status]();
       }
       return Promise.reject(error);
     });
