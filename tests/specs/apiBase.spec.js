@@ -20,6 +20,11 @@ describe("Client API base service", function() {
 
   describe("test constructing and configuring the service", function() {
 
+    it("should be constructed", function() {
+      const api = new mockClientApi();
+      expect(api).to.exist;
+    });
+
     it("should be constructed with the default values", function() {
       const api = new mockClientApi({});
       expect(api._clientApi).to.have.property('baseURL').equal('');
@@ -215,6 +220,24 @@ describe("Client API base service", function() {
   describe("test calling public fetch", function() {
     
     let api = null;
+
+    it("should send a fetch request and be resolved without passing any data", function() {
+      let mockClientApiResolve = ClientApi({
+        './circuit-breaker': sinon.stub().returns(() => Promise.resolve()),
+        './null-circuit-breaker': sinon.stub().returns(() => Promise.resolve())
+      }).default;
+
+      api = new mockClientApiResolve({
+        headers: new Headers({
+          'Content-Type': 'application/json'
+        }),
+        baseURL: 'www.mockClientApi.com',
+      });
+      return api.fetch('api/test', 'post')
+      .then(() => {
+        assert(true);
+      });
+    });
 
     it("should send a fetch request and be resolved", function() {
       let mockClientApiResolve = ClientApi({
