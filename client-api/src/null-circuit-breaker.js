@@ -6,6 +6,9 @@ export default (asyncFn, options) => {
   }
   
   return function () {
-    return asyncFn.apply(asyncFn.this, arguments);
+    return Promise.resolve()
+    .then(() => {
+      return asyncFn.apply(asyncFn.this, arguments);
+    });
   };
 };
