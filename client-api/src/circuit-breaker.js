@@ -23,9 +23,9 @@ export default (asyncFn, options) => {
     return value;
   }
   function handleFailure (error) {
-    if (error.response.status < 500) {
-      throw error;
-    }
+    // if (error.response.status < 500) {
+    //   throw error;
+    // }
     if (state === HALF_OPEN || state === CLOSED) {
       failures += 1;
       if (failures >= threshold) {
