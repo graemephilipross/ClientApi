@@ -20,6 +20,11 @@ describe("Client API base service", function() {
 
   describe("test constructing and configuring the service", function() {
 
+    it("should import its dependancies", function() {
+      const api = new ClientApi();
+      expect(api).to.exist;
+    });
+
     it("should be constructed", function() {
       const api = new mockClientApi();
       expect(api).to.exist;
