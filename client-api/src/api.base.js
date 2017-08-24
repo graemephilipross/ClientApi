@@ -1,6 +1,6 @@
 'use strict';
 
-import Hoek from 'hoek';
+import _ from 'lodash';
 import circuitBreaker from './circuit-breaker';
 import nullCircuitBreaker from './null-circuit-breaker';
 
@@ -49,7 +49,7 @@ export default class ApiBase {
   }
 
   _buildUrl(resource, method, data) {
-    if (restMethods.query.includes(method.toLowerCase()) && !Hoek.deepEqual(data, {})) {
+    if (restMethods.query.includes(method.toLowerCase()) && !_.isEmpty(data)) {
       resource += `?${this._buildQueryString(data)}`;
     }
     return resource;
