@@ -88,9 +88,9 @@ describe("Client API base service", function() {
 
     it("should not create a payload obj", function() {
       const payloadGet = api._createPayload('get', { test: 'testVal'});
-      expect(payloadGet).to.not.have.any.keys('test');
+      expect(payloadGet).to.equal(null);
       const payloadDel = api._createPayload('delete', { test: 'testVal'});
-      expect(payloadDel).to.not.have.any.keys('test');
+      expect(payloadDel).to.equal(null);
     });
 
     it("should create a payload obj", function() {
@@ -154,7 +154,6 @@ describe("Client API base service", function() {
     });
   });
 
-  describe("test sending a request", function() {
     
     let api = null;
 

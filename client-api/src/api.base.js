@@ -37,7 +37,7 @@ export default class ApiBase {
   _createPayload(method, data) {
     return restMethods.payload.includes(method.toLowerCase()) && data === Object(data)
       ? data
-      : {};
+      : null;
   }
     
   _buildQueryString(object) {
@@ -55,20 +55,24 @@ export default class ApiBase {
     return resource;
   }
 
-  // set addiotnal options method
-
   _sendReq(url, req) {
-    // may have to amend as all status codes return true
     return this._breaker(url, req)
-    .catch(error => {
-      // err callback in config
+    .then(res => {
       if (
-        error.response.status in this._clientApi &&
-        this._clientApi[error.response.status] instanceof Function
+        res.status in this._clientApi &&
+        this._clientApi[res.status] instanceof Function
       ) {
-        this._clientApi[error.response.status]();
+        this._clientApi[res.status]();
       }
-      return Promise.reject(error);
+      return Promise.all([res.json(), res]);
+    }, err => {
+      return Promise.reject({body: err, status: 500});
+    })
+    .then(([body, res]) => {
+      if (res.status === 200) {
+        return Promise.resolve({body, status: res.status});
+      }
+      return Promise.reject({body, status: res.status});
     });
   }
 
@@ -77,7 +81,7 @@ export default class ApiBase {
     const req = {
       ...this._clientApi,
       method,
-      body: JSON.stringify(this._createPayload(method, data))
+      body: this._createPayload(method, data) && JSON.stringify(this._createPayload(method, data))
     };
     return this._sendReq(url, req);
   }
