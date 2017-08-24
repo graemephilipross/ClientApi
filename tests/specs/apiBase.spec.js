@@ -154,13 +154,21 @@ describe("Client API base service", function() {
     });
   });
 
+  describe("test sending a request", function() {
     
     let api = null;
 
     it("should send a request and return resolved promise", function() {
+
       let mockClientApiResolve = ClientApi({
-        './circuit-breaker': sinon.stub().returns(() => Promise.resolve()),
-        './null-circuit-breaker': sinon.stub().returns(() => Promise.resolve())
+        './circuit-breaker': sinon.stub().returns(() => Promise.resolve({
+          status: 200, 
+          json: () => Promise.resolve({body: 'test'})
+        })),
+        './null-circuit-breaker': sinon.stub().returns(() => Promise.resolve({
+          status: 200, 
+          json: () => Promise.resolve({body: 'test'})
+        }))
       }).default;
 
       api = new mockClientApiResolve({
@@ -177,8 +185,14 @@ describe("Client API base service", function() {
 
     it("should send a request and return rejected promise", function() {
       let mockClientApiResolve = ClientApi({
-        './circuit-breaker': sinon.stub().returns(() => Promise.reject({response: ''})),
-        './null-circuit-breaker': sinon.stub().returns(() => Promise.reject({response: ''}))
+        './circuit-breaker': sinon.stub().returns(() => Promise.resolve({
+          status: 401, 
+          json: () => Promise.resolve({body: 'test'})
+        })),
+        './null-circuit-breaker': sinon.stub().returns(() => Promise.resolve({
+          status: 401, 
+          json: () => Promise.resolve({body: 'test'})
+        }))
       }).default;
 
       api = new mockClientApiResolve({
@@ -195,15 +209,13 @@ describe("Client API base service", function() {
 
     it("should send a request and return rejected promise and execute callback", function() {
       let mockClientApiResolve = ClientApi({
-        './circuit-breaker': sinon.stub().returns(() => Promise.reject({
-          response: {
-            status: 404
-          }
+        './circuit-breaker': sinon.stub().returns(() => Promise.resolve({
+          status: 404, 
+          json: () => Promise.resolve({body: 'test'})
         })),
-        './null-circuit-breaker': sinon.stub().returns(() => Promise.reject({
-          response: {
-            status: 404
-          }
+        './null-circuit-breaker': sinon.stub().returns(() => Promise.resolve({
+          status: 404, 
+          json: () => Promise.resolve({body: 'test'})
         }))
       }).default;
       const callback = sinon.spy();
@@ -227,8 +239,14 @@ describe("Client API base service", function() {
 
     it("should send a fetch request and be resolved without passing any data", function() {
       let mockClientApiResolve = ClientApi({
-        './circuit-breaker': sinon.stub().returns(() => Promise.resolve()),
-        './null-circuit-breaker': sinon.stub().returns(() => Promise.resolve())
+        './circuit-breaker': sinon.stub().returns(() => Promise.resolve({
+          status: 200, 
+          json: () => Promise.resolve({body: 'test'})
+        })),
+        './null-circuit-breaker': sinon.stub().returns(() => Promise.resolve({
+          status: 200, 
+          json: () => Promise.resolve({body: 'test'})
+        }))
       }).default;
 
       api = new mockClientApiResolve({
@@ -245,8 +263,14 @@ describe("Client API base service", function() {
 
     it("should send a fetch request and be resolved", function() {
       let mockClientApiResolve = ClientApi({
-        './circuit-breaker': sinon.stub().returns(() => Promise.resolve()),
-        './null-circuit-breaker': sinon.stub().returns(() => Promise.resolve())
+        './circuit-breaker': sinon.stub().returns(() => Promise.resolve({
+          status: 200, 
+          json: () => Promise.resolve({body: 'test'})
+        })),
+        './null-circuit-breaker': sinon.stub().returns(() => Promise.resolve({
+          status: 200, 
+          json: () => Promise.resolve({body: 'test'})
+        }))
       }).default;
 
       api = new mockClientApiResolve({
