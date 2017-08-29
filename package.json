@@ -1,5 +1,5 @@
 {
-  "name": "client-api-lib",
+  "name": "http-rest-client",
   "version": "0.0.0",
   "description": "A client api wrapper over fetch. Optional circuit breaking and service worker network-cache functionality",
   "main": "dist/index.js",
