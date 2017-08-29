@@ -4,7 +4,7 @@ var prodConfig = devConfig;
 
 prodConfig.output = {
   path: __dirname + '/dist',
-  filename: "bundle.js"
+  filename: "index.js"
 };
 delete prodConfig.devtool;
 

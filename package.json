@@ -2,10 +2,9 @@
   "name": "client-api-lib",
   "version": "0.0.0",
   "description": "A client api wrapper over fetch. Optional circuit breaking and service worker network-cache functionality",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
     "build": "webpack --config prod.webpack.config.js -p",
-    "postbuild": "cp index.html ./dist/index.html",
     "start": "webpack-dev-server",
     "test:win": "SET BABEL_ENV=test&&karma start --single-run || true",
     "test": "BABEL_ENV=test karma start --single-run || true",
@@ -14,12 +13,12 @@
   },
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "https://github.com/graemephilipross/ClientApi"
   },
   "author": "Graeme Ross",
   "license": "MIT",
   "bugs": {
-    "url": ""
+    "url": "https://github.com/graemephilipross/ClientApi/issues"
   },
   "homepage": "",
   "devDependencies": {
