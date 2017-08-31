@@ -1,3 +1,5 @@
+var webpack = require('webpack');
+
 module.exports={
   entry: "./client-api/index.js",
   output: {
@@ -12,5 +14,10 @@ module.exports={
       }
     ]
   },
-  devtool: "inline-source-map"
+  devtool: "inline-source-map",
+  plugins: [
+    new webpack.DefinePlugin({
+      VERSION: JSON.stringify(require("./package.json").version)
+    })
+  ]
 };

@@ -1,6 +1,7 @@
 'use strict';
 
 import _ from 'lodash';
+import EventEmitter from 'wolfy87-eventemitter';
 import circuitBreaker from './circuit-breaker';
 import nullCircuitBreaker from './null-circuit-breaker';
 
@@ -11,6 +12,9 @@ const restMethods = {
 
 export default class ApiBase {
   constructor(options = {}) {
+
+    this._ee = new EventEmitter();
+
     this._circuitBreaker = {
       gracePeriodMs: 5000,
       threshold: 5,
@@ -19,7 +23,8 @@ export default class ApiBase {
       headers: new Headers({
         'Content-Type': 'text/plain'
       }),
-      baseURL: ''
+      baseURL: '',
+      cacheThenNetwork: false
     };
 
     const { circuitBreaker: circuitBreakerConf, ...fetchConf } = options;
@@ -76,13 +81,64 @@ export default class ApiBase {
     });
   }
 
-  fetch(resource, method, data = {}){
+  _cacheThenNetworkReq(url, req, event) {
+
+    let networkDataReceived = false;
+    let cacheDataReceived = false;
+
+    const networkBody = res => {
+      networkDataReceived = true;
+      if (cacheDataReceived) {
+        this._ee.emitEvent(event, [res]);
+      }
+    };
+
+    return new Promise((resolve, reject) => {
+      this._sendReq(url, req)
+      .then(res => {
+        networkBody(res);
+        resolve(res);
+      })
+      .catch(res => {
+        networkBody(res);
+        reject(res);
+      });
+
+      caches.match(url)
+      .then(res => {
+        if (!res) {
+          // rely on network req to reject / resolve
+          return Promise.resolve([]);
+        }
+        return Promise.all([res.json(), res.status]);
+      })
+      .then(([body, status]) => {
+        if (body && !networkDataReceived) {
+          cacheDataReceived = true;
+          if (status === 200) {
+            resolve({body, status});
+          }
+          reject({body, status});
+        }
+      });
+    });
+  }
+
+  fetch(resource, method, data = {}, event = null){
     const url = `${this._clientApi.baseURL}/${this._buildUrl(resource, method, data)}`;
     const req = {
       ...this._clientApi,
       method,
       body: this._createPayload(method, data) && JSON.stringify(this._createPayload(method, data))
     };
+    // use cache then network strategy
+    if (this._clientApi.cacheThenNetwork && 'caches' in window) {
+      return this._cacheThenNetworkReq(url, req, event);
+    }
     return this._sendReq(url, req);
+  }
+
+  on(event, callback) {
+    this._ee.addListener(event, callback);
   }
 }
